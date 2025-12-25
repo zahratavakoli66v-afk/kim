@@ -1,0 +1,35 @@
+<!DOCTYPE html>
+<html lang="fa">
+<head>
+  <meta charset="UTF-8" />
+  <title>Kim Runner</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <link rel="stylesheet" href="style.css" />
+</head>
+<body>
+
+  <!-- کانتینر اصلی بازی -->
+  <div id="game-container">
+
+    <!-- HUD (امتیاز و رکورد) -->
+    <div id="hud">
+      <span>امتیاز: <span id="score">0</span></span>
+      <span>رکورد: <span id="bestScore">0</span></span>
+    </div>
+
+    <!-- Canvas بازی -->
+    <canvas id="game"></canvas>
+
+    <!-- لایه شروع / پایان -->
+    <div id="overlay">
+      <button id="startBtn">شروع بازی</button>
+    </div>
+
+  </div>
+
+  <!-- صدا -->
+  <audio id="jumpSound" src="jump.mp3" preload="auto"></audio>
+
+  <script src="script.js"></script>
+</body>
+</html>
