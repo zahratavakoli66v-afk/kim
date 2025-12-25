@@ -1,25 +1,18 @@
-/* ===============================
-   تنظیم Canvas
-================================ */
 const canvas = document.getElementById("game");
 const ctx = canvas.getContext("2d");
 
-// اندازه واقعی بازی (ریسپانسیو فقط با CSS انجام می‌شود)
+/* اندازه واقعی بازی */
 canvas.width = 1200;
 canvas.height = 600;
 
-/* ===============================
-   عناصر HTML
-================================ */
+/* عناصر HTML */
 const overlay = document.getElementById("overlay");
 const startBtn = document.getElementById("startBtn");
 const scoreEl = document.getElementById("score");
 const bestScoreEl = document.getElementById("bestScore");
 const jumpSound = document.getElementById("jumpSound");
 
-/* ===============================
-   تصاویر
-================================ */
+/* تصاویر */
 const kimImg = new Image();
 kimImg.src = "kim.png";
 
@@ -29,35 +22,25 @@ bombImg.src = "bomb.png";
 const nukeImg = new Image();
 nukeImg.src = "nuke.png";
 
-/* ===============================
-   زمین
-================================ */
+/* زمین */
 const GROUND_Y = canvas.height - 40;
 
-/* ===============================
-   وضعیت بازی
-================================ */
+/* وضعیت بازی */
 let gameRunning = false;
 let gameOver = false;
 
-/* ===============================
-   امتیاز
-================================ */
+/* امتیاز */
 let score = 0;
 let bestScore = localStorage.getItem("bestScore") || 0;
 bestScoreEl.textContent = bestScore;
 
-/* ===============================
-   سرعت بازی
-================================ */
-let gameSpeed = 6; // شروع یک واحد بیشتر
+/* سرعت */
+let gameSpeed = 6;
 let speedTimer = 0;
-const SPEED_INTERVAL = 10 * 60; // هر 10 ثانیه
+const SPEED_INTERVAL = 10 * 60;
 const MAX_SPEED = 17;
 
-/* ===============================
-   کاراکتر (کیم)
-================================ */
+/* کاراکتر */
 const kim = {
   x: 120,
   width: 110,
@@ -70,36 +53,22 @@ const kim = {
   maxJump: 2
 };
 
-/* ===============================
-   موانع
-================================ */
+/* موانع */
 let obstacles = [];
 let gameStartTime = null;
 let bombSpawnCount = 0;
 
-/* ===============================
-   ساخت Wave مانع
-================================ */
+/* ساخت wave */
 function spawnObstacleWave() {
   const elapsed = (performance.now() - gameStartTime) / 1000;
-  let type = "bomb";
-
-  if (elapsed > 15 && Math.random() < 0.3) {
-    type = "nuke";
-  }
+  let type = elapsed > 15 && Math.random() < 0.3 ? "nuke" : "bomb";
 
   let count = 1;
 
   if (type === "bomb") {
     bombSpawnCount++;
-    if (bombSpawnCount <= 3) {
-      count = 1;
-    } else {
-      count = Math.floor(Math.random() * 3) + 1;
-    }
-  }
-
-  if (type === "nuke") {
+    count = bombSpawnCount <= 3 ? 1 : Math.floor(Math.random() * 3) + 1;
+  } else {
     count = Math.floor(Math.random() * 2) + 1;
   }
 
@@ -111,21 +80,16 @@ function spawnObstacleWave() {
       x: startX + i * (type === "nuke" ? 80 : 65),
       width: type === "nuke" ? 70 : 55,
       height: type === "nuke" ? 165 : 55,
-      y: type === "nuke"
-        ? GROUND_Y - 165
-        : GROUND_Y - 55,
+      y: type === "nuke" ? GROUND_Y - 165 : GROUND_Y - 55,
       scored: false,
       points: type === "nuke" ? 20 : 10,
-
       isLeader: i === 0,
       spawnedNext: false
     });
   }
 }
 
-/* ===============================
-   Hitbox منصفانه
-================================ */
+/* Hitbox */
 function getKimHitbox() {
   return {
     x: kim.x + 35,
@@ -144,9 +108,7 @@ function getObstacleHitbox(o) {
   };
 }
 
-/* ===============================
-   شروع بازی
-================================ */
+/* شروع */
 function startGame() {
   resetGame();
   gameRunning = true;
@@ -155,23 +117,7 @@ function startGame() {
 
 startBtn.onclick = startGame;
 
-/* ===============================
-   کنترل کیبورد
-================================ */
-document.addEventListener("keydown", e => {
-  if (e.code === "Space") {
-    handleJump();
-  }
-});
-
-/* ===============================
-   کنترل موبایل (لمس)
-================================ */
-canvas.addEventListener("touchstart", e => {
-  e.preventDefault();
-  handleJump();
-}, { passive: false });
-
+/* کنترل */
 function handleJump() {
   if (!gameRunning) {
     startGame();
@@ -186,9 +132,16 @@ function handleJump() {
   }
 }
 
-/* ===============================
-   ریست بازی
-================================ */
+document.addEventListener("keydown", e => {
+  if (e.code === "Space") handleJump();
+});
+
+canvas.addEventListener("touchstart", e => {
+  e.preventDefault();
+  handleJump();
+}, { passive: false });
+
+/* ریست */
 function resetGame() {
   score = 0;
   scoreEl.textContent = score;
@@ -209,20 +162,16 @@ function resetGame() {
   gameOver = false;
 }
 
-/* ===============================
-   آپدیت بازی
-================================ */
+/* آپدیت */
 function update() {
   if (!gameRunning || gameOver) return;
 
-  // افزایش سرعت
   speedTimer++;
   if (speedTimer >= SPEED_INTERVAL && gameSpeed < MAX_SPEED) {
     gameSpeed++;
     speedTimer = 0;
   }
 
-  // فیزیک کیم
   kim.dy += kim.gravity;
   kim.y += kim.dy;
 
@@ -232,20 +181,16 @@ function update() {
     kim.jumpCount = 0;
   }
 
-  // حرکت موانع
   obstacles.forEach(o => (o.x -= gameSpeed));
 
-  // اسپاون دقیق Wave
   const leader = obstacles.find(o => o.isLeader && !o.spawnedNext);
   if (leader && leader.x + leader.width < canvas.width / 2) {
     spawnObstacleWave();
     leader.spawnedNext = true;
   }
 
-  // حذف موانع خارج‌شده
   obstacles = obstacles.filter(o => o.x + o.width > -200);
 
-  // امتیاز
   obstacles.forEach(o => {
     if (!o.scored && kim.x > o.x + o.width) {
       score += o.points;
@@ -254,7 +199,6 @@ function update() {
     }
   });
 
-  // برخورد
   const k = getKimHitbox();
   obstacles.forEach(o => {
     const ob = getObstacleHitbox(o);
@@ -277,31 +221,23 @@ function update() {
   });
 }
 
-/* ===============================
-   رسم
-================================ */
+/* رسم */
 function draw() {
   ctx.clearRect(0, 0, canvas.width, canvas.height);
 
-  // زمین
   ctx.beginPath();
   ctx.moveTo(0, GROUND_Y);
   ctx.lineTo(canvas.width, GROUND_Y);
   ctx.stroke();
 
-  // کیم
   ctx.drawImage(kimImg, kim.x, kim.y, kim.width, kim.height);
 
-  // موانع
   obstacles.forEach(o => {
-    const img = o.type === "nuke" ? nukeImg : bombImg;
-    ctx.drawImage(img, o.x, o.y, o.width, o.height);
+    ctx.drawImage(o.type === "nuke" ? nukeImg : bombImg, o.x, o.y, o.width, o.height);
   });
 }
 
-/* ===============================
-   حلقه اصلی بازی
-================================ */
+/* حلقه اصلی */
 function gameLoop() {
   update();
   draw();
